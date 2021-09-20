@@ -50,7 +50,7 @@ sums <- function(x) {
       TotValue = sum(TotValue, na.rm = TRUE),
       subsurface = sum(subsurface, na.rm = TRUE),
       surface = sum(surface, na.rm = TRUE),
-      sar = sum(surface, na.rm = TRUE),
+      sar = sum(sar, na.rm = TRUE),
       subsar = sum(subsar, na.rm = TRUE),
       NoDistinctVessels = vessels(AnonymizedVesselID, NoDistinctVessels),
       AnonymizedVesselID = ids(AnonymizedVesselID, NoDistinctVessels)
@@ -75,6 +75,11 @@ out_benth <-
 
 
 # summarise tot weight and total value and fishinghours
+if (FALSE) {
+  x <- out_benth$FishingHour
+  vs <- out_benth$NoDistinctVessels
+  ids <- out_benth$AnonymizedVesselID
+}
 categorise <- function(x, vs, ids, nbreaks = 20, name) {
   breaks <- scales::breaks_pretty(nbreaks)(x)
   int <- findInterval(x, breaks)
