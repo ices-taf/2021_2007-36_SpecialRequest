@@ -45,5 +45,6 @@ vignettes/*.pdf
 /data/
 /model/
 /output/
+/report/
 
 *.code-workspace

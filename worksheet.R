@@ -43,3 +43,5 @@ taf.roxygenise(
 )
 
 taf.bootstrap(software = FALSE)
+
+sourceAll()
