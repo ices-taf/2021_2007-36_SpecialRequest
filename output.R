@@ -99,7 +99,7 @@ categorise <- function(x, vs, ids, nbreaks = 20, name) {
   out
 }
 
-save_output_benth <- function(nbreaks) {
+save_output_benth <- function(nbreaks, shape = TRUE, check.only = FALSE) {
   out <- out_benth
   out <-
     cbind(
@@ -123,18 +123,25 @@ save_output_benth <- function(nbreaks) {
     )
     tibble()
 
+  if (check.only) return()
+
   # write out a shapefile for each gear
   dir <- file.path("output", paste0("breaks_", nbreaks))
   mkdir(dir)
 
+  fwrite(out, file = file.path(dir, "Benth.csv"))
+  if (!shape) {
+    return()
+  }
+
   by(out, interaction(out$benthisMet, out$Year, drop = TRUE), function(x) {
     x_sf <- st_as_sf(x, wkt = "wkt", crs = 4326)
     fname <- paste0(x$benthisMet[1], "-", x$Year[1], ".shp")
-    st_write(x_sf, file.path(dir, fname))
+    suppressWarnings(st_write(x_sf, file.path(dir, fname)))
   })
 }
 
-save_output_agg <- function(nbreaks) {
+save_output_agg <- function(nbreaks, shape = TRUE, check.only = FALSE) {
   out <- out_agg
   out <-
     cbind(
@@ -158,19 +165,27 @@ save_output_agg <- function(nbreaks) {
     )
     tibble()
 
+  if (check.only) {
+    return()
+  }
 
   # write out a shapefile for each gear
   dir <- file.path("output", paste0("breaks_", nbreaks))
   mkdir(dir)
 
+  fwrite(out, file = file.path(dir, "agg.csv"))
+  if (!shape) {
+    return()
+  }
+
   by(out, interaction(out$fishingCategory, out$Year, drop = TRUE), function(x) {
     x_sf <- st_as_sf(x, wkt = "wkt", crs = 4326)
     fname <- paste0(x$fishingCategory[1], "-", x$Year[1], ".shp")
-    st_write(x_sf, file.path(dir, fname))
+    suppressWarnings(st_write(x_sf, file.path(dir, fname)))
   })
 }
 
-save_output_total <- function(nbreaks) {
+save_output_total <- function(nbreaks, shape = TRUE, check.only = FALSE) {
   out <- out_total
   out <-
     cbind(
@@ -194,23 +209,47 @@ save_output_total <- function(nbreaks) {
     ) %>%
     tibble()
 
+  if (check.only) {
+    return()
+  }
+
   # write out a shapefile for each gear
   dir <- file.path("output", paste0("breaks_", nbreaks))
   mkdir(dir)
 
+  fwrite(out, file = file.path(dir, "Total.csv"))
+  if (!shape) return()
+
   by(out, out$Year, function(x) {
     x_sf <- st_as_sf(x, wkt = "wkt", crs = 4326)
     fname <- paste0("Total-", x$Year[1], ".shp")
-    st_write(x_sf, file.path(dir, fname))
+    suppressWarnings(st_write(x_sf, file.path(dir, fname)))
   })
 }
 
+# check anonymity holds
+save_output_total(20, check.only = TRUE)
+save_output_agg(20, check.only = TRUE)
+save_output_benth(20, check.only = TRUE)
 
-categorise(
-  out_total$FishingHour, out_total$NoDistinctVessels, out_total$AnonymizedVesselID,
-  nbreaks = 25000, name = "FishingHour_"
-)
+save_output_total(50, check.only = TRUE)
+save_output_agg(50, check.only = TRUE)
+save_output_benth(50, check.only = TRUE)
 
+# these all have issues
+save_output_total(100, check.only = TRUE)
+save_output_agg(100, check.only = TRUE)
+save_output_benth(100, check.only = TRUE)
+
+save_output_total(200, check.only = TRUE)
+save_output_agg(200, check.only = TRUE)
+save_output_benth(200, check.only = TRUE)
+
+# save
 save_output_total(20)
 save_output_agg(20)
 save_output_benth(20)
+
+save_output_total(50)
+save_output_agg(50)
+save_output_benth(50)
