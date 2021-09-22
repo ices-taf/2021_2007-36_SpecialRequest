@@ -79,10 +79,16 @@ if (FALSE) {
   x <- out_benth$FishingHour
   vs <- out_benth$NoDistinctVessels
   ids <- out_benth$AnonymizedVesselID
+  nbreaks <- 20
 }
 categorise <- function(x, vs, ids, nbreaks = 20, name) {
-  breaks <- quantile(x, seq(0, 1, length = nbreaks + 1))
-  breaks[length(breaks)] <- ceiling(breaks[length(breaks)] + 0.001)
+  cut0 <- 0
+  cut1 <- ceiling(quantile(x[vs > 2], .05))
+  x_large <- x[x > cut1]
+  breaks_large <- signif(quantile(x_large, seq(0, 1, length = nbreaks)[-1]), 2)
+  breaks_large[length(breaks_large)] <- ceiling(max(x) + 0.001)
+
+  breaks <- c(cut0, cut1, breaks_large)
   int <- findInterval(x, breaks, left.open = FALSE)
   out <-
     tibble(
@@ -95,12 +101,13 @@ categorise <- function(x, vs, ids, nbreaks = 20, name) {
     mutate(
       anon = vessels(ids, vs) >= 3
     ) %>%
-    select(-vs, -ids)
+    dplyr::select(-vs, -ids)
 
   if (!all(out$anon)) {
     warning("These breaks have resulted in groups with less than 3 unique vessels!")
   }
 
+  out <- out %>% dplyr::select(-anon)
   names(out) <- paste0(name, names(out))
   out
 }
@@ -109,12 +116,13 @@ categorise_all <- function(out, nbreaks) {
     out <-
       cbind(
         out,
-        categorise(out$FishingHour, out$NoDistinctVessels, out$AnonymizedVesselID, nbreaks = nbreaks, name = "FishingHour_"),
-        categorise(out$TotWeight, out$NoDistinctVessels, out$AnonymizedVesselID, nbreaks = nbreaks, name = "TotWeight_"),
-        categorise(out$TotValue, out$NoDistinctVessels, out$AnonymizedVesselID, nbreaks = nbreaks, name = "TotValue_")
+        categorise(out$kWFishingHour, out$NoDistinctVessels, out$AnonymizedVesselID, nbreaks = nbreaks, name = "kWH_"),
+        categorise(out$FishingHour, out$NoDistinctVessels, out$AnonymizedVesselID, nbreaks = nbreaks, name = "Hour_"),
+        categorise(out$TotWeight, out$NoDistinctVessels, out$AnonymizedVesselID, nbreaks = nbreaks, name = "TotWt_"),
+        categorise(out$TotValue, out$NoDistinctVessels, out$AnonymizedVesselID, nbreaks = nbreaks, name = "TotVal_")
       ) %>%
-      select(
-        -FishingHour, -TotWeight, -TotValue
+      dplyr::select(
+        -kWFishingHour, -FishingHour, -TotWeight, -TotValue, -NoDistinctVessels, -AnonymizedVesselID
       ) %>%
       mutate(
         wkt = paste(
@@ -205,4 +213,102 @@ save_output_total <- function(nbreaks, shape = TRUE, check.only = FALSE) {
   })
 
   invisible(out)
+}
+
+
+
+make_map <- function(value, gear, ) {
+  msg("doing: ", value, " - ", gear)
+
+  sa_gear <- sa_benth %>%
+    filter(
+      benthisMet == gear
+    )
+
+  print(str(sa_gear))
+
+  msg("  making rasters")
+  rasts <-
+    lapply(years, function(year) {
+      sa_gear_y <- filter(sa_gear, Year == year)
+      sa_gear_y <- sa_gear_y[sa_gear_y[[value]] > 0, ]
+      msg("    ", year)
+      if (nrow(sa_gear_y) == 0) {
+        return(NULL)
+      }
+
+      # make raster
+      resolution <- 0.05
+      loc <- sa_gear_y %>%
+        dplyr::select(lon, lat) %>%
+        rename(y = lat, x = lon)
+
+      # set up an 'empty' raster, here via an extent object derived from your data
+      r <- raster(extent(loc) + resolution / 2,
+        resolution = resolution,
+        crs = sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+      )
+
+      r <- rasterize(loc, r, trans(sa_gear_y[[value]]), fun = "sum")
+
+      r
+    })
+  names(rasts) <- years
+
+  if (all(sapply(rasts, is.null))) {
+    msg("skipping, no non-zero data")
+    return(NULL)
+  }
+  rvalues <- sort(unique(unname(unlist(lapply(rasts, function(x) if (!is.null(x)) values(x) else NA)))))
+
+  # palatte
+    rvalues <- range(rvalues[!is.na(rvalues)])
+    pal <- colorNumeric("Spectral", rvalues,
+      na.color = "transparent", reverse = TRUE
+    )
+
+  msg("  making map")
+  m <-
+    leaflet() %>%
+    addProviderTiles(providers$Esri.OceanBasemap)
+
+  # add layers
+
+  rnames <-
+    paste0(
+      names(rasts), ": ",
+      sapply(rasts, function(x) {
+        if (!is.null(x)) {
+          paste(round(trans_inv(range(values(x), na.rm = TRUE)), 3), collapse = " - ")
+        } else {
+          NA
+        }
+      })
+    )
+
+  for (layer in seq_along(rasts)) {
+    if (is.null(rasts[[layer]])) next
+    m <- addRasterImage(m, rasts[[layer]], colors = pal, opacity = 0.8, group = rnames[[layer]])
+  }
+
+  # add legend
+  m <- addLegend(m,
+    pal = pal, values = rvalues,
+    title = sprintf("%s (%s)", value, gear), opacity = .8,
+    labFormat = labelFormat(transform = trans_inv)
+  )
+
+  # add controls
+  m <- addLayersControl(m,
+    baseGroups = rnames,
+    options = layersControlOptions(collapsed = FALSE)
+  )
+
+  m <- addScaleBar(
+    m,
+    position = "bottomright",
+    options = scaleBarOptions()
+  )
+
+  m
 }

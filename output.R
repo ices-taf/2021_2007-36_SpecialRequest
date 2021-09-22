@@ -35,16 +35,7 @@ out_benth <-
   group_by(Year, `C-square`, lat, lon, benthisMet) %>%
   sums()
 
-# check anonymity holds
-# find some good nbreaks values
-out <- categorise_all(out_total, 20)
-table(out$FishingHour_mid)
-
 # save
 save_output_total(20)
 save_output_agg(20)
 save_output_benth(20)
-
-save_output_total(50)
-save_output_agg(50)
-save_output_benth(50)
