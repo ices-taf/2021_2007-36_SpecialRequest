@@ -13,6 +13,9 @@ library(dplyr)
 mkdir("data")
 
 
+# load ospar csquares
+load(taf.data.path("csquare_lookup", "csquares_ospar.rData"), verbose = TRUE)
+
 # get vms data
 vms_files <- dir(taf.data.path("db"), pattern = "vms_*", full.names = TRUE)
 vms_all <- lapply(vms_files, fread)
@@ -39,7 +42,10 @@ makeNA <- function(x) {
 # clean
 vms <-
   vms_all %>%
-  filter(Year < 2021) %>%
+  filter(
+    Year < 2021 &
+    `C-square` %in% csquares_ospar$csquares
+  ) %>%
   mutate(
     AverageVesselLength = makeNA(AverageVesselLength),
     AveragekW = makeNA(AveragekW),
