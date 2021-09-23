@@ -46,4 +46,9 @@ taf.roxygenise(
 
 taf.bootstrap(software = FALSE)
 
-sourceAll()
+#sourceAll()
+
+sourceTAF("data")
+sourceTAF("model")
+sourceTAF("output")
+sourceTAF("report")
