@@ -77,3 +77,37 @@ A total of 209 shapefiles are provided named following the convention: `<layer n
 | TtVl_pp | Total value upper bound for category |
 | TtVl_cv | Total value data coverage for category |
 | geometry | WKT (Well known text) representation of the c-square |
+
+### csv files (simple features)
+
+Also provided are three csv files containing the same information as the shapefiles:
+* total.csv - fully aggregated by year
+* fishing_categories.csv - aggregated by fishing category (Beam, etc) and year
+* benthic_metiers.csv - aggregated by benthic metier and year
+
+These contain several layers at once with the following structure:
+
+| Column name | Definition |
+| -------------- | ---------- |
+| Year | Year |
+| C-square | C-square |
+| lat | Midpoint latitude of c-square |
+| lon | Midpoint longitude of c-square |
+| benthisMet / FishingCategory / <missing> | For files which contain aggregated data, the aggregated group name |
+| subsurface | Subsurface swept area |
+| surface | Surface swept area |
+| sar | Surface swept area ratio |
+| subsar | Subsurface swept area ratio |
+| kWH_low | Kw Fishing Hours lower bound for category |
+| kWH_upp | Kw Fishing Hours upper bound for category |
+| kWH_cov | Kw Fishing Hours data coverage for category |
+| Hour_low | Fishing hours lower bound for category  |
+| Hour_upp | Fishing hours upper bound for category |
+| Hour_cov | Fishing hours data coverage for category |
+| TotWt_low | Total Weight lower bound for category  |
+| TotWt_upp | Total Weight upper bound for category |
+| TotWt_cov | Total Weight data coverage for category |
+| TotVal_low | Total value lower bound for category  |
+| TotVal_upp | Total value upper bound for category |
+| TotVal_cov | Total value data coverage for category |
+| wkt | WKT (Well known text) representation of the c-square |
