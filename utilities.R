@@ -76,35 +76,44 @@ sums <- function(x) {
 
 
 if (FALSE) {
-  x <- out_benth$FishingHour
-  vs <- out_benth$NoDistinctVessels
-  ids <- out_benth$AnonymizedVesselID
+  x <- out_benth$TotWeight[out_benth$benthisMet == "OT_SPF"]
+  vs <- out_benth$NoDistinctVessels[out_benth$benthisMet == "OT_SPF"]
+  ids <- out_benth$AnonymizedVesselID[out_benth$benthisMet == "OT_SPF"]
   nbreaks <- 20
 }
 categorise <- function(x, vs, ids, nbreaks = 20, name) {
-  cut0 <- 0
-  cut1 <- ceiling(quantile(x[vs > 2], .05))
-  x_large <- x[x > cut1]
-  breaks_large <- signif(quantile(x_large, seq(0, 1, length = nbreaks)[-1]), 2)
-  breaks_large[length(breaks_large)] <- ceiling(max(x) + 0.001)
 
-  breaks <- c(cut0, cut1, breaks_large)
-  int <- findInterval(x, breaks, left.open = FALSE)
+  # first compute quantiles
+  quantiles <- quantile(x, seq(0, 1, length = nbreaks + 1))
+  quantiles[length(quantiles)] <- ceiling(max(x) + 0.01)
+
+  # calculate the lowest category: 5th percentile of data with more than 2 unique vessels
+  cut <- quantile(x[vs > 2], .05)
+
+  # strip of the lower categories, such that all categories except for the bottom 2
+  # are true 5th percentile ranges, working from the maximum down.
+  # also the 2nd category will always contain between 5% and 10% of the data
+  breaks <- c(0, cut, quantiles[quantiles > cut][-1])
+  cats <- findInterval(x, breaks, left.open = FALSE)
+
+  coverage <- signif(table(cats) / length(cats), 2)
+
   out <-
     tibble(
-      min = breaks[int],
-      max = breaks[int + 1],
-      mid = (breaks[-1] + breaks[-length(breaks)])[int] / 2,
+      low = breaks[cats],
+      upp = breaks[cats + 1],
+      cov = coverage[cats],
       vs = vs, ids = ids
     ) %>%
-    group_by(min, max, mid) %>%
+    group_by(low, upp, cov) %>%
     mutate(
       anon = vessels(ids, vs) >= 3
     ) %>%
     dplyr::select(-vs, -ids)
 
   if (!all(out$anon)) {
-    warning("These breaks have resulted in groups with less than 3 unique vessels!")
+    print(name)
+    warning(name, ": These breaks have resulted in groups with less than 3 unique vessels!")
   }
 
   out <- out %>% dplyr::select(-anon)
@@ -112,7 +121,8 @@ categorise <- function(x, vs, ids, nbreaks = 20, name) {
   out
 }
 
-categorise_all <- function(out, nbreaks) {
+categorise_all <- function(out, nbreaks = 20) {
+    print(out[1,5])
     out <-
       cbind(
         out,
@@ -140,58 +150,6 @@ categorise_all <- function(out, nbreaks) {
 }
 
 
-# summarise tot weight and total value and fishinghours
-save_output_benth <- function(nbreaks, shape = TRUE, check.only = FALSE) {
-  out <- categorise_all(out_benth, nbreaks)
-
-  if (check.only) {
-    return()
-  }
-    # write out a shapefile for each gear
-    dir <- file.path("output", paste0("breaks_", nbreaks))
-    mkdir(dir)
-  fwrite(out, file = file.path(dir, "Benth.csv"))
-
-  if (!shape) {
-    return()
-  }
-
-  by(out, interaction(out$benthisMet, out$Year, drop = TRUE), function(x) {
-    x_sf <- st_as_sf(x, wkt = "wkt", crs = 4326)
-    fname <- paste0(x$benthisMet[1], "-", x$Year[1], ".shp")
-    if (!file.exists(file.path(dir, fname))) {
-      suppressWarnings(st_write(x_sf, file.path(dir, fname)))
-    }
-  })
-
-  invisible(out)
-}
-
-save_output_agg <- function(nbreaks, shape = TRUE, check.only = FALSE) {
-  out <- categorise_all(out_agg, nbreaks)
-
-  if (check.only) {
-    return()
-  }
-    # write out a shapefile for each gear
-    dir <- file.path("output", paste0("breaks_", nbreaks))
-    mkdir(dir)
-  fwrite(out, file = file.path(dir, "agg.csv"))
-  if (!shape) {
-    return()
-  }
-
-  by(out, interaction(out$fishingCategory, out$Year, drop = TRUE), function(x) {
-    x_sf <- st_as_sf(x, wkt = "wkt", crs = 4326)
-    fname <- paste0(x$fishingCategory[1], "-", x$Year[1], ".shp")
-    if (!file.exists(file.path(dir, fname))) {
-      suppressWarnings(st_write(x_sf, file.path(dir, fname)))
-    }
-  })
-
-  invisible(out)
-}
-
 save_output_total <- function(nbreaks, shape = TRUE, check.only = FALSE) {
   out <- categorise_all(out_total, nbreaks)
 
@@ -217,15 +175,8 @@ save_output_total <- function(nbreaks, shape = TRUE, check.only = FALSE) {
 
 
 
-make_map <- function(value, gear, ) {
+make_map <- function(value, gear, sa_gear) {
   msg("doing: ", value, " - ", gear)
-
-  sa_gear <- sa_benth %>%
-    filter(
-      benthisMet == gear
-    )
-
-  print(str(sa_gear))
 
   msg("  making rasters")
   rasts <-
