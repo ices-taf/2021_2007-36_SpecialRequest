@@ -48,3 +48,5 @@ vignettes/*.pdf
 /report/
 
 *.code-workspace
+
+*.qgz
