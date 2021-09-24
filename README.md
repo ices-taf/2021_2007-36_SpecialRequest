@@ -49,6 +49,25 @@ As such these values require to be anonymized (any published value must have 3 o
 
 Rather than a single value, 3 values are provided in the spatial layers for each sensitive attribute: lower (_low), upper (_upp), and coverage (_cov), giving the lower bound, upper bound and the data coverage for the category that that cell belongs to.  The coverage provides the proportion of the data contained in that category; by design there should be at lease 5% of the data in any category, and only the first 2 categories will contain more than 5% of the data. Therefor, an algorithm which aggregates over the top 5 categories will provide a method of finding the smallest footprint containing 25% of the catches.
 
+As an example, these is the categories defined for DRB_MOL, where it can be seen that the first category contains the lowest 32% of the data, the second category 7.6 and the remaining categories containing 5% each.
+
+|   Hour_low|    Hour_upp| Hour_cov|
+|----------:|-----------:|--------:|
+|   0.000000|    5.245975|    0.320|
+|   5.245975|    8.264933|    0.076|
+|   8.264933|   12.000000|    0.050|
+|  12.000000|   16.872458|    0.050|
+|  16.872458|   23.281783|    0.050|
+|  23.281783|   31.701000|    0.050|
+|  31.701000|   42.429600|    0.050|
+|  42.429600|   56.988306|    0.050|
+|  56.988306|   76.849500|    0.050|
+|  76.849500|  103.259800|    0.050|
+| 103.259800|  144.222800|    0.050|
+| 144.222800|  207.148014|    0.050|
+| 207.148014|  340.060728|    0.050|
+| 340.060728| 2872.000000|    0.050|
+
 ## Definition of data sets
 
 ### Shapefiles
