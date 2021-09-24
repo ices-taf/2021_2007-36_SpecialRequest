@@ -34,7 +34,7 @@ taf.bootstrap(data = FALSE)
 
 taf.roxygenise(
   files = c(
-    #"advice_pdf.R",
+    "advice_pdf.R",
     "disclaimer.R",
     "db.R",
     "benthis_gears.R",
