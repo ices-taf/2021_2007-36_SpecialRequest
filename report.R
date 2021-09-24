@@ -7,4 +7,4 @@ library(icesTAF)
 
 mkdir("report")
 
-source("report_leaflet.R")
+source("report_zip.R")

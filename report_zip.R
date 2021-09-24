@@ -8,7 +8,7 @@ library(icesTAF)
 mkdir("report")
 
 # collate documents into a zip file
-files <- dir("output/breaks_20/", full.names = TRUE)
+files <- dir("output", full.names = TRUE)
 
 zip(
   file.path(
@@ -28,17 +28,6 @@ zip(
   extras = "-j"
 )
 
-zip(
-  file.path(
-    "report",
-    "html_map_renders.zip"
-  ),
-  dir("report/breaks_20/", full.names = TRUE),
-  extras = "-j"
-)
-
-
-
 # zip up with disclaimer, and advice document
 files <-
   c(
@@ -46,7 +35,6 @@ files <-
     taf.data.path("disclaimer", "disclaimer.txt"),
     "report/shapefiles.zip",
     "report/simple_features.zip",
-    "report/html_map_renders.zip",
     "README.md"
   )
 
