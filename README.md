@@ -1,20 +1,7 @@
 # 2021_2007-36_SpecialRequest
  OSPAR 2021/Production of 2018-2020 and update of 2009-2017 spatial data layers of fishing intensity/pressure
 
-## preparation of sensitive attributes.
-
-The attributes considered sensitive are:
-
-* kW fishing hours
-* Fishing hours
-* Total weight in the catch
-* Total value in the catch
-
-As such these values require to be anonymized (any published value must have 3 or more vessels contributing to it). This was ensured by converting values into one of 20 categories, specified by a lower and upper bound. Checks are undertaken to ensure that each category has 3 or more vessels are contained in that category. Categories are defined separately for each layer, but are common across years and metiers so that data can be accumulated over time if necessary. Importantly, the lowest category is defined to be greater than zero to an upper value that is defined as the 5th percentile of the values for which there are 3 or more vessels contributing to it. This ensures that the lowest category range contains cells with one 2 and 3 or more vessels. The remaining categories are defined as percentiles, so that each category has a meaning in terms of the range of observed values. For example if you combine the top 10 categories you will have the cells with value greater than median, or the top category is the highest 5% of values.
-
-The values provided in the spatial layers are the lower (_min), upper (_max), and midpoint (_mid).
-
-## Request
+## Request (abridged)
 
 ICES is requested to specifically produce fishing intensity/ pressure spatial layers containing the following information per c-square and per year:
 * Aggregated layers:
@@ -38,12 +25,26 @@ ICES is requested to specifically produce fishing intensity/ pressure spatial la
   * DRB_MOL
   * SDN_DMF
   * SSC_DMF
+
 This equals 19 layers per year, delivered as Shapefiles with the highest possible resolution, with the following attributes included in each layer:
-  * Surface area in Km2 (Swept area),
-  * Surface area ratio,
-  * Sub-surface area in Km2 (Swept area),
-  * Sub-surface area ratio,
-  * Total Weight,
-  * Total value,
-  * Kw Fishing Hours,
-  * Fishing hour
+* Surface area in Km2 (Swept area),
+* Surface area ratio,
+* Sub-surface area in Km2 (Swept area),
+* Sub-surface area ratio,
+* Total Weight,
+* Total value,
+* Kw Fishing Hours,
+* Fishing hour
+
+## preparation of sensitive attributes.
+
+The attributes considered sensitive are:
+
+* Total Weight,
+* Total value,
+* Kw Fishing Hours,
+* Fishing hour
+
+As such these values require to be anonymized (any published value must have 3 or more vessels contributing to it). This was ensured by first converting values into one of 20 categories based on quantiles so that each category contains 5% of the data. However, it is likely that the lower categories contain only single vessel values. So to ensure anonimity, the lowest category is redefined to be from greater than zero to an upper value given by the 5th percentile of the values for which there are 3 or more contributing vessels. This ensures that the lowest category range contains cells with one two and three or more vessels. If this crosses one or more of the twenty categories, they are collapsed into this lower category such that all categories contain no less that 5%  of the data. Hence there may be less than 20 categories over all. Further checks are undertaken after this to ensure that each category has 3 or more vessels contained within it. Categories are defined separately for each layer, but are common across years and metiers so that data can be accumulated over time if necessary.
+
+The values provided in the spatial layers are the lower (_low), upper (_upp), and coverage (_cov).  The coverage provides the proportion of the data contained in that category; by design there should be at lease 5% of the data in any category, and only the first 2 categories will contain more than 5% of the data. There, an algorithm which aggregates over the top 5 categories will provide a method of finding the smallest footprint containing 25% of the catches.
