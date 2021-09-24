@@ -54,7 +54,8 @@ The values provided in the spatial layers are the lower (_low), upper (_upp), an
 ### Shapefiles
 
 A total of 209 shapefiles are provided named following the convention: `<layer name>-<year>.shp` for example `Beam-2020.shp`. Each shape file has an attribute table with the following column names:
-
+| Attribute name | Definition |
+| --- | --- |
 |Year| . |
 |C.squar| . |
 |lat| . |
