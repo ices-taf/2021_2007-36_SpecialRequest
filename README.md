@@ -27,22 +27,22 @@ ICES is requested to specifically produce fishing intensity/ pressure spatial la
   * SSC_DMF
 
 This equals 19 layers per year, delivered as Shapefiles with the highest possible resolution, with the following attributes included in each layer:
-* Surface area in Km2 (Swept area),
-* Surface area ratio,
-* Sub-surface area in Km2 (Swept area),
-* Sub-surface area ratio,
-* Total Weight,
-* Total value,
-* Kw Fishing Hours,
+* Surface area in Km2 (Swept area)
+* Surface area ratio
+* Sub-surface area in Km2 (Swept area)
+* Sub-surface area ratio
+* Total Weight
+* Total value
+* Kw Fishing Hours
 * Fishing hour
 
 ## preparation of sensitive attributes.
 
 The attributes considered sensitive are:
 
-* Total Weight,
-* Total value,
-* Kw Fishing Hours,
+* Total Weight
+* Total value
+* Kw Fishing Hours
 * Fishing hour
 
 As such these values require to be anonymized (any published value must have 3 or more vessels contributing to it). This was ensured by first converting values into one of 20 categories based on quantiles so that each category contains 5% of the data. However, it is likely that the lower categories contain only single vessel values. So to ensure anonimity, the lowest category is redefined to be from greater than zero to an upper value given by the 5th percentile of the values for which there are 3 or more contributing vessels. This ensures that the lowest category range contains cells with one two and three or more vessels. If this crosses one or more of the twenty categories, they are collapsed into this lower category such that all categories contain no less that 5%  of the data. Hence there may be less than 20 categories over all. Further checks are undertaken after this to ensure that each category has 3 or more vessels contained within it. Categories are defined separately for each layer, but are common across years and metiers so that data can be accumulated over time if necessary.
@@ -55,26 +55,25 @@ The values provided in the spatial layers are the lower (_low), upper (_upp), an
 
 A total of 209 shapefiles are provided named following the convention: `<layer name>-<year>.shp` for example `Beam-2020.shp`. Each shape file has an attribute table with the following column names:
 | Attribute name | Definition |
-| --- | --- |
-|Year| . |
-|C.squar| . |
-|lat| . |
-|lon| . |
-|fshngCt| . |
-|subsrfc| . |
-|surface| . |
-|sar| . |
-|subsar| . |
-|kWH_low| . |
-|kWH_upp| . |
-|kWH_cov| . |
-|Hour_lw| . |
-|Hour_pp| . |
-|Hour_cv| . |
-|TtWt_lw| . |
-|TtWt_pp| . |
-|TtWt_cv| . |
-|TtVl_lw| . |
-|TtVl_pp| . |
-|TtVl_cv| . |
-|geometry| . |
+| -------------- | ---------- |
+| Year           | Year       |
+| C.squar | C-square |
+| lat | Midpoint latitude of c-square |
+| lon | Midpoint longitude of c-square |
+| subsrfc | Subsurface swept area |
+| surface | Surface swept area |
+| sar | Surface swept area ratio |
+| subsar | Subsurface swept area ratio |
+| kWH_low | Kw Fishing Hours lower bound for category |
+| kWH_upp | Kw Fishing Hours upper bound for category |
+| kWH_cov | Kw Fishing Hours data coverage for category |
+| Hour_lw | Fishing hours lower bound for category |
+| Hour_pp | Fishing hours upper bound for category |
+| Hour_cv | Fishing hours data coverage for category |
+| TtWt_lw | Total Weight lower bound for category |
+| TtWt_pp | Total Weight upper bound for category |
+| TtWt_cv | Total Weight data coverage for category |
+| TtVl_lw | Total value lower bound for category |
+| TtVl_pp | Total value upper bound for category |
+| TtVl_cv | Total value data coverage for category |
+| geometry | WKT (Well known text) representation of the c-square |
